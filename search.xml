@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<search>
+  
+  
+    
+    <entry>
+      <title><![CDATA[多线程之GCD使用与陷阱]]></title>
+      <url>http://yoursite.com/2016/04/11/%E5%A4%9A%E7%BA%BF%E7%A8%8B%E4%B9%8BGCD%E4%BD%BF%E7%94%A8%E4%B8%8E%E9%99%B7%E9%98%B1/</url>
+      <content type="html"><![CDATA[<h3 id="GCD的使用"><a href="#GCD的使用" class="headerlink" title="GCD的使用"></a>GCD的使用</h3><blockquote>
+<p>Grand Central Dispatch (GCD) 是Apple为多核的并行计算提出的解决方法，该方法在Mac OS X 10.6  Snow leopard 首次推出，随后被引入 iOS 4 中。 GCD 会自动地利用更多的 CPU 内核（比如双核、四核），最重要的是它会自动管理线程的生命周期（创建线程、调度任务、销毁线程）。同时它使用的也是 C 语言，不过是使用了 Block ，使用起来更加方便灵活。</p>
+</blockquote>
+<p> GCD 的基本思想是将任务放到队列执行，从而引入任务和队列概念</p>
+<ul>
+<li>任务：即操作，你想要干什么，就是一段代码，在 GCD 中就是一个 Block ，所以添加任务十分方便。任务有两种执行方式：同步操作和异步操作。<ul>
+<li>同步操作，它会阻塞当前线程并等待 Block 中的任务执行完毕，当前线程才会继续运行。</li>
+<li>异步操作，当前线程会直接往下执行，它不会阻塞当前线程。</li>
+</ul>
+</li>
+<li>队列：负责调度任务执行所在的线程以及具体执行时间，一共有两种队列，串行队列和并行队列。<ul>
+<li>串行队列（Serial dispatch queue）， 串行队列按照 FIFO（先进先出）原则一次只能处理一个任务(一个任务执行完毕后，再执行下一个任务)，新添加至队列的任务都会排在队尾。</li>
+<li>并行队列中的任务， GCD 会按照 FIFO（先进先出，但不同的是，它取出来一个放到别的线程，然后再取出一个又放到另外一个线程。由于取出的动作很快，忽略不计，看起来所有的任务是一起执行的，不过 GCD 会根据系统资源控制并行的数量，当任务很多，它并不会让所有任务同时执行。</li>
+</ul>
+</li>
+</ul>
+<table>
+<thead>
+<tr>
+<th>结果</th>
+<th>同步执行</th>
+<th>异步执行</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td> 串行队列</td>
+<td>当前线程一个个执行</td>
+<td>其他线程一个个执行</td>
+</tr>
+<tr>
+<td> 并行队列</td>
+<td>当前线程一个个执行</td>
+<td>开很多线程一起执行</td>
+</tr>
+</tbody>
+</table>
+<h4 id="队列"><a href="#队列" class="headerlink" title="队列"></a>队列</h4><ul>
+<li>主队列</li>
+<li>全局并行队列</li>
+<li>自己创建的队列</li>
+</ul>
+<h5 id="主队列"><a href="#主队列" class="headerlink" title="主队列"></a>主队列</h5><blockquote>
+<p>这是一个特殊的串行队列，用于刷新UI，任何刷新UI的工作都在主队列中执行，一般耗时的任务都放到别的线程中执行。</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_main_queue();</span><br></pre></td></tr></table></figure>
+<h5 id="全局队列"><a href="#全局队列" class="headerlink" title="全局队列"></a>全局队列</h5><blockquote>
+<p>全局队列是系统的，直接拿过来就可以用，与并行队列类似，但是不能指定队列的名字，调试时无法确认任务所在队列</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, <span class="number">0</span>);</span><br></pre></td></tr></table></figure>
+<h5 id="自定义串行队列"><a href="#自定义串行队列" class="headerlink" title="自定义串行队列"></a>自定义串行队列</h5><blockquote>
+<p>虽然<code>dispatch_queue_create</code>的第二个参数默认传<code>NULL</code>也表示串行队列，但是dispatch_queue_attr_t类型是有已经定义好的常量的，使用常量为了更加的清晰、严谨。</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"serial"</span>, DISPATCH_QUEUE_SERIAL);</span><br></pre></td></tr></table></figure>
+<h5 id="自定义并行队列"><a href="#自定义并行队列" class="headerlink" title="自定义并行队列"></a>自定义并行队列</h5><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"concurrent"</span>, DISPATCH_QUEUE_CONCURRENT);</span><br></pre></td></tr></table></figure>
+<h5 id="队列组"><a href="#队列组" class="headerlink" title="队列组"></a>队列组</h5><blockquote>
+<p>队列组可以将很多队列添加到一个组里，这样做的好处是，当这个组里所有的任务都执行完了，队列组会通过一个方法通知我们</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br></pre></td><td class="code"><pre><span class="line">dispatch_group_t group = dispatch_group_create();</span><br><span class="line"></span><br><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"async"</span>, DISPATCH_QUEUE_CONCURRENT);</span><br><span class="line"></span><br><span class="line">dispatch_group_async(group, queue, ^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"group-01:%@"</span>, [<span class="built_in">NSThread</span> currentThread]);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">dispatch_group_async(group, queue, ^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"group-02:%@"</span>, [<span class="built_in">NSThread</span> currentThread]);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">dispatch_group_async(group, queue, ^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"group-03:%@"</span>, [<span class="built_in">NSThread</span> currentThread]);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line">dispatch_group_notify(group, queue, ^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"完成"</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<h3 id="GCD-的陷阱"><a href="#GCD-的陷阱" class="headerlink" title="GCD 的陷阱"></a>GCD 的陷阱</h3><h4 id="dispatch-after是延迟提交，不是延迟运行"><a href="#dispatch-after是延迟提交，不是延迟运行" class="headerlink" title="dispatch_after是延迟提交，不是延迟运行"></a>dispatch_after是延迟提交，不是延迟运行</h4><blockquote>
+<p>Enqueue a block for execution at the specified time.<br>指的就是将一个Block在特定的延时以后，加入到指定的队列中，不是在特定的时间后立即运行</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//创建串行队列</span></span><br><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"me.tutuge.test.gcd"</span>, DISPATCH_QUEUE_SERIAL);</span><br><span class="line"></span><br><span class="line"><span class="comment">//立即打印一条信息</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"Begin add block..."</span>);</span><br><span class="line"></span><br><span class="line"><span class="comment">//提交一个block</span></span><br><span class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">    <span class="comment">//Sleep 10秒</span></span><br><span class="line">    [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">10</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"First block done..."</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//5 秒以后提交block</span></span><br><span class="line">dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(<span class="number">5</span> * <span class="built_in">NSEC_PER_SEC</span>)), queue, ^&#123;</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"After..."</span>);</span><br><span class="line">&#125;);</span><br></pre></td></tr></table></figure>
+<p>结果:<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">56</span>:<span class="number">40.059</span> URLCache[<span class="number">65505</span>:<span class="number">1556236</span>] Begin add block...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">56</span>:<span class="number">50.065</span> URLCache[<span class="number">65505</span>:<span class="number">1556355</span>] First block done...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">56</span>:<span class="number">50.066</span> URLCache[<span class="number">65505</span>:<span class="number">1556355</span>] After...</span><br></pre></td></tr></table></figure></p>
+<p>修改<code>dispatch_async</code>后结果为：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">52</span>:<span class="number">29.991</span> URLCache[<span class="number">65473</span>:<span class="number">1549935</span>] Begin add block...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">52</span>:<span class="number">39.992</span> URLCache[<span class="number">65473</span>:<span class="number">1549935</span>] First block done...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">13</span>:<span class="number">52</span>:<span class="number">45.471</span> URLCache[<span class="number">65473</span>:<span class="number">1550311</span>] After...</span><br></pre></td></tr></table></figure></p>
+<h4 id="dispatch-suspend-当前-Block执行完，暂停后续的-Block-执行"><a href="#dispatch-suspend-当前-Block执行完，暂停后续的-Block-执行" class="headerlink" title="dispatch_suspend 当前 Block执行完，暂停后续的 Block 执行"></a>dispatch_suspend 当前 Block执行完，暂停后续的 Block 执行</h4><blockquote>
+<p>dispatch_suspend 提供<code>挂起</code>队列的功能，这里<code>挂起</code>并不是立即停止正在运行的 Block ，而是当前 Block 执行完成后，暂停后续的 Block 执行。</p>
+</blockquote>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br><span class="line">21</span><br><span class="line">22</span><br><span class="line">23</span><br><span class="line">24</span><br><span class="line">25</span><br><span class="line">26</span><br><span class="line">27</span><br><span class="line">28</span><br><span class="line">29</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">dispatch_queue_t</span> queue = dispatch_queue_create(<span class="string">"me.tutuge.test.gcd"</span>, DISPATCH_QUEUE_SERIAL);</span><br><span class="line"></span><br><span class="line"><span class="comment">//提交第一个block，延时5秒打印。</span></span><br><span class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">    [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">5</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"After 5 seconds..."</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//提交第二个block，也是延时5秒打印</span></span><br><span class="line"><span class="built_in">dispatch_async</span>(queue, ^&#123;</span><br><span class="line">    [<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">5</span>];</span><br><span class="line">    <span class="built_in">NSLog</span>(<span class="string">@"After 5 seconds again..."</span>);</span><br><span class="line">&#125;);</span><br><span class="line"></span><br><span class="line"><span class="comment">//延时一秒</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"sleep 1 second..."</span>);</span><br><span class="line">[<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">1</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//挂起队列</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"suspend..."</span>);</span><br><span class="line">dispatch_suspend(queue);</span><br><span class="line"></span><br><span class="line"><span class="comment">//延时10秒</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"sleep 10 second..."</span>);</span><br><span class="line">[<span class="built_in">NSThread</span> sleepForTimeInterval:<span class="number">10</span>];</span><br><span class="line"></span><br><span class="line"><span class="comment">//恢复队列</span></span><br><span class="line"><span class="built_in">NSLog</span>(<span class="string">@"resume..."</span>);</span><br><span class="line">dispatch_resume(queue);</span><br></pre></td></tr></table></figure>
+<p>结果：<br><figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br></pre></td><td class="code"><pre><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">14</span>:<span class="number">16</span>:<span class="number">21.589</span> URLCache[<span class="number">65680</span>:<span class="number">1589563</span>] sleep <span class="number">1</span> second...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">14</span>:<span class="number">16</span>:<span class="number">22.591</span> URLCache[<span class="number">65680</span>:<span class="number">1589563</span>] suspend...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">14</span>:<span class="number">16</span>:<span class="number">22.591</span> URLCache[<span class="number">65680</span>:<span class="number">1589563</span>] sleep <span class="number">10</span> second...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">14</span>:<span class="number">16</span>:<span class="number">26.590</span> URLCache[<span class="number">65680</span>:<span class="number">1589640</span>] After <span class="number">5</span> seconds...</span><br><span class="line"><span class="number">2016</span><span class="number">-04</span><span class="number">-10</span> <span class="number">14</span>:<span class="number">16</span>:<span class="number">32.592</span> URLCache[<span class="number">65680</span>:<span class="number">1589563</span>] resume...</span><br></pre></td></tr></table></figure></p>
+<h4 id="不要使用-dispatch-get-current-queue"><a href="#不要使用-dispatch-get-current-queue" class="headerlink" title="不要使用 `dispatch_get_current_queue"></a>不要使用 `dispatch_get_current_queue</h4><h3 id="总结"><a href="#总结" class="headerlink" title="总结"></a>总结</h3><h4 id="多用-GCD-，少用-performSelctor-系列方法"><a href="#多用-GCD-，少用-performSelctor-系列方法" class="headerlink" title="多用 GCD ，少用 performSelctor 系列方法"></a>多用 GCD ，少用 performSelctor 系列方法</h4><h3 id="参考"><a href="#参考" class="headerlink" title="参考"></a>参考</h3><ul>
+<li><a href="https://developer.apple.com/library/mac/documentation/Performance/Reference/GCD_libdispatch_Ref/index.html" target="_blank" rel="external">Grand Central Dispatch (GCD) Reference</a></li>
+<li><a href="http://tutuge.me/2015/04/03/something-about-gcd/" target="_blank" rel="external">GCD使用经验与技巧浅谈</a></li>
+<li><a href="http://www.jianshu.com/p/0b0d9b1f1f19" target="_blank" rel="external">关于iOS多线程，你看我就够了</a></li>
+</ul>
+]]></content>
+    </entry>
+    
+    <entry>
+      <title><![CDATA[iOS时区与时间转换]]></title>
+      <url>http://yoursite.com/2015/12/29/iOS%E6%97%B6%E5%8C%BA%E4%B8%8E%E6%97%B6%E9%97%B4%E8%BD%AC%E6%8D%A2/</url>
+      <content type="html"><![CDATA[<p>最近遇到一个App中修改时区与12小时制与24小时制转化的问题困惑了接近一天，最后准备把自己在iOS场景中时区时间理解分享出来供大家参考。</p>
+<p>在次之前需要弄清楚几个概念。</p>
+<ol>
+<li>什么是GMT时间，什么是UTC时间</li>
+<li>什么是时差</li>
+<li>NSDate对应的什么时间</li>
+</ol>
+<hr>
+<blockquote>
+<p>关于GMT时间与UTC时间这里只做简单的介绍，GMT时间称为格林尼治时间，而UTC时间则称为世界标准时间，两者在概念上非常接近，UTC时间其本质是比GMT时间更加准确的世界时间；至于什么是时差按照科学上标准将地球划分24个时区，将经度为0的地方定位世界标准时间的时区，以中国北京时间东八区为例则是UTC/GMT +8，同样洛杉矶为例子当前时区为 西八区（目前正实行夏时制，时间拨快 1 小时）UTC/GMT -7，与北京时差则为晚15个小时</p>
+</blockquote>
+<p>上面介绍了GMT、UTC、时差的概念，下面就用实例告诉NSDate究竟是什么时间</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *dateStr = @“<span class="number">2015</span><span class="number">-05</span><span class="number">-02</span> <span class="number">15</span>:<span class="number">35</span>”;</span><br><span class="line"><span class="built_in">NSDateFormatter</span> *dateFormatter = [[<span class="built_in">NSDateFormatter</span> alloc] init];</span><br><span class="line">[dateFormatter setDateFormat:@“yyyy-MM-dd HH:mm”];</span><br><span class="line"> </span><br><span class="line"><span class="built_in">NSDate</span> *anyDate = [dateFormatter dateFromString:dateStr];</span><br><span class="line"><span class="built_in">NSLog</span>(@“date:%@“, anyDate);</span><br></pre></td></tr></table></figure>
+<p><em>格式化输出时间时间为</em><br><figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">2015-05-03 15:43:16.838 TimeZone[5294:449748] date:2015-05-02 07:35:00 +0000</span><br></pre></td></tr></table></figure></p>
+<p>从输出的时间显示，为什么刚好相8个小时的时差</p>
+<ol>
+<li>NSDate存储的时间格式为UTC时间,默认会将NSDate时间以系统当前时区（北京时区)转为UTC标准时间</li>
+<li>NSDateFormatter的格式化时间的时区默认系统当前时区</li>
+<li>事实上代码中制定的字符串时间已经制定为系统当前时区（北京时区）</li>
+</ol>
+<p>严格而言每次格式化输出时间都应该指定时区，脱离时区单纯谈时间是毫无意义的，上述代码应改为</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line"><span class="built_in">NSString</span> *dateStr = @“<span class="number">2015</span><span class="number">-05</span><span class="number">-02</span> <span class="number">15</span>:<span class="number">35</span>”;</span><br><span class="line"><span class="built_in">NSDateFormatter</span> *dateFormatter = [[<span class="built_in">NSDateFormatter</span> alloc] init];</span><br><span class="line">[dateFormatter setDateFormat:@“yyyy-MM-dd HH:mm”];</span><br><span class="line"> </span><br><span class="line"><span class="built_in">NSDate</span> *anyDate = [dateFormatter dateFromString:dateStr];</span><br><span class="line"><span class="built_in">NSLog</span>(@“date:%@“, anyDate);</span><br></pre></td></tr></table></figure>
+<p><em>格式化输出时间时间为</em><br><img src="http://cl.ly/image/0s383G241P0Y/Image%202015-05-03%20at%203.47.19%20%E4%B8%8B%E5%8D%88.png" alt=""></p>
+<p>相信看了前段的大量分析后，对于时区的时间转换已经明白了，但是我还是罗嗦的写下。</p>
+<figure class="highlight objc"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment">//源时区</span></span><br><span class="line"><span class="built_in">NSTimeZone</span>* sourceTimeZone = [<span class="built_in">NSTimeZone</span> timeZoneWithName:@“Asia/Shanghai”];</span><br><span class="line"><span class="built_in">NSString</span> *dateStr = @“<span class="number">2015</span><span class="number">-05</span><span class="number">-02</span> <span class="number">16</span>:<span class="number">00</span>”;</span><br><span class="line"><span class="built_in">NSDateFormatter</span> *dateFormatter = [[<span class="built_in">NSDateFormatter</span> alloc] init];</span><br><span class="line">[dateFormatter setDateFormat:@“yyyy-MM-dd HH:mm”];</span><br><span class="line">[dateFormatter setTimeZone:sourceTimeZone];</span><br><span class="line"><span class="built_in">NSDate</span> *anyDate = [dateFormatter dateFromString:dateStr];</span><br><span class="line"><span class="built_in">NSLog</span>(@“date:%@“, anyDate);</span><br><span class="line">    </span><br><span class="line"><span class="comment">//目标时区</span></span><br><span class="line"><span class="built_in">NSTimeZone</span>* destinationTimeZone = [<span class="built_in">NSTimeZone</span> timeZoneWithName:@“America/Los_Angeles”];</span><br><span class="line">[dateFormatter setTimeZone:destinationTimeZone];</span><br><span class="line"></span><br><span class="line"><span class="built_in">NSString</span> *adjustStr = [dateFormatter stringFromDate:anyDate];</span><br><span class="line"><span class="built_in">NSLog</span>(@“adjust:%@“,adjustStr);</span><br></pre></td></tr></table></figure>
+<p><em>格式化输出时间时间为</em><br><img src="http://cl.ly/image/332v1b3p2w0G/Image%202015-05-03%20at%204.01.09%20%E4%B8%8B%E5%8D%88.png" alt=""></p>
+<p>备注:</p>
+<blockquote>
+<p>这里最核心需要弄明白几个概念和NSDate相关方法的特性，时差是相对的而时间绝对，时区转换中NSDate是不需要变化的因为时间没有变，只是显示的时间改变，只需要改变NSDateFormatter<br>关于时间12进制与24进制转换的部分下次补上</p>
+</blockquote>
+]]></content>
+    </entry>
+    
+  
+  
+</search>
