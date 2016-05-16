@@ -4,6 +4,42 @@
   
     
     <entry>
+      <title><![CDATA[Mac 上 SVN 入坑小记 (二)]]></title>
+      <url>http://yoursite.com/2016/05/16/Mac-%E4%B8%8A-SVN-%E5%85%A5%E5%9D%91%E5%B0%8F%E8%AE%B0-%E4%BA%8C/</url>
+      <content type="html"><![CDATA[<blockquote>
+<p>继续上篇，用了几周继续来说说小白 SVN 入坑的经历。</p>
+</blockquote>
+<h3 id="svn-的命令行真心不适用"><a href="#svn-的命令行真心不适用" class="headerlink" title="svn 的命令行真心不适用"></a>svn 的命令行真心不适用</h3><p> SVN 目录下所有文件的删除、添加到workspace都需要一个个<code>svn add filePath</code>与 <code>svn delete filePath</code>,如果指定目录会提示<code>Illegal target for the requested operation</code>由于目录存在文件不能<code>add</code>或<code>delete</code>，命令行操作提交大量文件的修改是一件痛苦的事情,好怀念<code>git</code>在的日子，目前在用’Cornerstone`试用版，但是Mac 上好用价格合适的 SVN 工具真心没找到。</p>
+<h3 id="适用于-SVN-的ignore"><a href="#适用于-SVN-的ignore" class="headerlink" title="适用于 SVN 的ignore"></a>适用于 SVN 的<code>ignore</code></h3><p> 这几天提交项目的时候发现其他人编译的时候总是缺少静态库<code>.a</code>文件只能发现缺少一个个添加，然而适用<code>svn st</code>没有任何异常，会不会是类似 Git 的<code>.gitignore</code>，果然查找资料发现<code>config</code>文件记载 SVN 一些配置。</p>
+<ol>
+<li>打开终端,  在命令行中输入: vi ~/.subversion/config  来打开配置文件.</li>
+<li><p>然后, 在[miscellany]项找到配置，这是 SVN<br>自动忽略以这些后缀的文件 </p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br></pre></td><td class="code"><pre><span class="line"># global-ignores = *.o *.lo *.la *.al .libs *.so *.so.[0-9]* *.a *.pyc *.pyo</span><br><span class="line">#   *.rej *~ #*# .#* .*.swp .DS_Store</span><br></pre></td></tr></table></figure>
+</li>
+<li><p>我们要去掉*.a这一项, 则将配置文件改为</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">global-ignores = *.o *.lo *.la *.al .libs *.so *.so.[0-9]*  *.pyc *.pyo *.rej *~ #*# .#* .*.swp .DS_Store</span><br></pre></td></tr></table></figure>
+</li>
+</ol>
+<h3 id="解决-SVN-的-database-locked"><a href="#解决-SVN-的-database-locked" class="headerlink" title="解决 SVN 的 database locked"></a>解决 SVN 的 database locked</h3><p>when I run:</p>
+<p>svn cleanup<br>I get the error message:</p>
+<p>svn: E200033: database is locked, executing statement ‘RELEASE   s0’</p>
+<p>This helped me solve the problem (subversion 1.7.10):</p>
+<p>$ cd /my/repository/.svn<br>$ mv wc.db wc.db.old<br>$ sqlite3 wc.db.old<br>sqlite&gt; .backup main wc.db<br>sqlite&gt; .exit<br>After making sure it works, you can remove wc.db.old.</p>
+<h3 id="忽略不需要版本控制的文件"><a href="#忽略不需要版本控制的文件" class="headerlink" title="忽略不需要版本控制的文件"></a>忽略不需要版本控制的文件</h3><blockquote>
+<p>以<code>UserInterfaceState.xcuserstate</code>为例</p>
+</blockquote>
+<h4 id="设置忽略属性"><a href="#设置忽略属性" class="headerlink" title="设置忽略属性"></a>设置忽略属性</h4><ol>
+<li>cd ~/工程目录/工程名字.xcodeproj/project.xcworkspace/xcuserdata/用户名.xcuserdatad</li>
+<li>svn rm –force UserInterfaceState.xcuserstate</li>
+<li>export EDITOR=nano [注释:这是bash下]  </li>
+<li>svn propedit svn:ignore . [注意后面有个点号,代表本目录]</li>
+<li>第4步执行完了会弹出nano编辑界面,复制粘贴UserInterfaceState.xcuserstate后按Ctrl+X输入Y保存即可</li>
+<li>输入svn status就发现不显示UserInterfaceState.xcuserstate了.证明修改成功.</li>
+</ol>
+]]></content>
+    </entry>
+    
+    <entry>
       <title><![CDATA[Mac 上 SVN 入坑小记 (一)]]></title>
       <url>http://yoursite.com/2016/04/21/Mac-%E4%B8%8A-SVN-%E5%85%A5%E5%9D%91%E5%B0%8F%E8%AE%B0%EF%BC%88%E4%B8%80%EF%BC%89/</url>
       <content type="html"><![CDATA[<blockquote>
