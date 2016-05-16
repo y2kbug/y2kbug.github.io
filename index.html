@@ -342,14 +342,6 @@
 </blockquote>
 <p>最后在<code>stack Overflow</code>找到解决方案，亲测 <code>subversion 1.7.10</code> 有效</p>
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cd /my/repository/.svn</span><br><span class="line">$ mv wc.db wc.db.old</span><br><span class="line">$ sqlite3 wc.db.old</span><br><span class="line">sqlite&gt; .backup main wc.db</span><br><span class="line">sqlite&gt; .exit</span><br><span class="line">After making sure it works, you can remove wc.db.old.</span><br></pre></td></tr></table></figure>
-<h3 id="忽略不需要版本控制的文件"><a href="#忽略不需要版本控制的文件" class="headerlink" title="忽略不需要版本控制的文件"></a>忽略不需要版本控制的文件</h3><h4 id="设置忽略属性-1"><a href="#设置忽略属性-1" class="headerlink" title="设置忽略属性"></a>设置忽略属性</h4><ol>
-<li>cd ~/工程目录/工程名字.xcodeproj/project.xcworkspace/xcuserdata/用户名.xcuserdatad</li>
-<li>svn rm –force UserInterfaceState.xcuserstate</li>
-<li>export EDITOR=nano [注释:这是bash下]  </li>
-<li>svn propedit svn:ignore . [注意后面有个点号,代表本目录]</li>
-<li>第4步执行完了会弹出nano编辑界面,复制粘贴UserInterfaceState.xcuserstate后按Ctrl+X输入Y保存即可</li>
-<li>输入svn status就发现不显示UserInterfaceState.xcuserstate了.证明修改成功.</li>
-</ol>
 
           
         
