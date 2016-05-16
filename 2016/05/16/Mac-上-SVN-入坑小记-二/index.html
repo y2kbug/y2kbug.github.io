@@ -84,20 +84,20 @@
 
 <meta name="description" content="继续上篇，用了几周继续来说说小白 SVN 入坑的经历。
 
-svn 的命令行真心不适用 SVN 目录下所有文件的删除、添加到workspace都需要一个个svn add filePath与 svn delete filePath,如果指定目录会提示Illegal target for the requested operation由于目录存在文件不能add或delete，命令行操作提交大量文件的修">
+SVN  的命令行真心不适用 SVN 目录下所有文件的删除、添加到workspace都需要一个个svn add filePath与 svn delete filePath,如果指定目录会提示Illegal target for the requested operation由于目录存在文件不能add或delete，命令行操作提交大量文件的">
 <meta property="og:type" content="article">
 <meta property="og:title" content="Mac 上 SVN 入坑小记 (二)">
 <meta property="og:url" content="http://yoursite.com/2016/05/16/Mac-上-SVN-入坑小记-二/index.html">
 <meta property="og:site_name" content="Hexo">
 <meta property="og:description" content="继续上篇，用了几周继续来说说小白 SVN 入坑的经历。
 
-svn 的命令行真心不适用 SVN 目录下所有文件的删除、添加到workspace都需要一个个svn add filePath与 svn delete filePath,如果指定目录会提示Illegal target for the requested operation由于目录存在文件不能add或delete，命令行操作提交大量文件的修">
-<meta property="og:updated_time" content="2016-05-16T13:25:09.000Z">
+SVN  的命令行真心不适用 SVN 目录下所有文件的删除、添加到workspace都需要一个个svn add filePath与 svn delete filePath,如果指定目录会提示Illegal target for the requested operation由于目录存在文件不能add或delete，命令行操作提交大量文件的">
+<meta property="og:updated_time" content="2016-05-16T13:52:43.000Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="Mac 上 SVN 入坑小记 (二)">
 <meta name="twitter:description" content="继续上篇，用了几周继续来说说小白 SVN 入坑的经历。
 
-svn 的命令行真心不适用 SVN 目录下所有文件的删除、添加到workspace都需要一个个svn add filePath与 svn delete filePath,如果指定目录会提示Illegal target for the requested operation由于目录存在文件不能add或delete，命令行操作提交大量文件的修">
+SVN  的命令行真心不适用 SVN 目录下所有文件的删除、添加到workspace都需要一个个svn add filePath与 svn delete filePath,如果指定目录会提示Illegal target for the requested operation由于目录存在文件不能add或delete，命令行操作提交大量文件的">
 
 
 
@@ -318,8 +318,8 @@ svn 的命令行真心不适用 SVN 目录下所有文件的删除、添加到wo
         <blockquote>
 <p>继续上篇，用了几周继续来说说小白 SVN 入坑的经历。</p>
 </blockquote>
-<h3 id="svn-的命令行真心不适用"><a href="#svn-的命令行真心不适用" class="headerlink" title="svn 的命令行真心不适用"></a>svn 的命令行真心不适用</h3><p> SVN 目录下所有文件的删除、添加到workspace都需要一个个<code>svn add filePath</code>与 <code>svn delete filePath</code>,如果指定目录会提示<code>Illegal target for the requested operation</code>由于目录存在文件不能<code>add</code>或<code>delete</code>，命令行操作提交大量文件的修改是一件痛苦的事情,好怀念<code>git</code>在的日子，目前在用’Cornerstone`试用版，但是Mac 上好用价格合适的 SVN 工具真心没找到。</p>
-<h3 id="适用于-SVN-的ignore"><a href="#适用于-SVN-的ignore" class="headerlink" title="适用于 SVN 的ignore"></a>适用于 SVN 的<code>ignore</code></h3><p> 这几天提交项目的时候发现其他人编译的时候总是缺少静态库<code>.a</code>文件只能发现缺少一个个添加，然而适用<code>svn st</code>没有任何异常，会不会是类似 Git 的<code>.gitignore</code>，果然查找资料发现<code>config</code>文件记载 SVN 一些配置。</p>
+<h3 id="SVN-的命令行真心不适用"><a href="#SVN-的命令行真心不适用" class="headerlink" title="SVN  的命令行真心不适用"></a>SVN  的命令行真心不适用</h3><p> SVN 目录下所有文件的删除、添加到workspace都需要一个个<code>svn add filePath</code>与 <code>svn delete filePath</code>,如果指定目录会提示<code>Illegal target for the requested operation</code>由于目录存在文件不能<code>add</code>或<code>delete</code>，命令行操作提交大量文件的修改是一件痛苦的事情,好怀念<code>git</code>在的日子，目前在用’Cornerstone`试用版，但是Mac 上好用价格合适的 SVN 工具真心没找到。</p>
+<h3 id="SVN-忽略不需要版本控制的文件"><a href="#SVN-忽略不需要版本控制的文件" class="headerlink" title="SVN 忽略不需要版本控制的文件"></a>SVN 忽略不需要版本控制的文件</h3><h4 id="修改配置文件"><a href="#修改配置文件" class="headerlink" title="修改配置文件"></a>修改配置文件</h4><p> 这几天提交项目的时候发现其他人编译的时候总是缺少静态库<code>.a</code>文件只能发现缺少一个个添加，然而适用<code>svn st</code>没有任何异常，会不会是类似 Git 的<code>.gitignore</code>，果然查找资料发现<code>config</code>文件记载 SVN 一些配置。</p>
 <ol>
 <li>打开终端,  在命令行中输入: vi ~/.subversion/config  来打开配置文件.</li>
 <li><p>然后, 在[miscellany]项找到配置，这是 SVN<br>自动忽略以这些后缀的文件 </p>
@@ -329,15 +329,20 @@ svn 的命令行真心不适用 SVN 目录下所有文件的删除、添加到wo
 <figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br></pre></td><td class="code"><pre><span class="line">global-ignores = *.o *.lo *.la *.al .libs *.so *.so.[0-9]*  *.pyc *.pyo *.rej *~ #*# .#* .*.swp .DS_Store</span><br></pre></td></tr></table></figure>
 </li>
 </ol>
-<h3 id="解决-SVN-的-database-locked"><a href="#解决-SVN-的-database-locked" class="headerlink" title="解决 SVN 的 database locked"></a>解决 SVN 的 database locked</h3><p>when I run:</p>
-<p>svn cleanup<br>I get the error message:</p>
-<p>svn: E200033: database is locked, executing statement ‘RELEASE   s0’</p>
-<p>This helped me solve the problem (subversion 1.7.10):</p>
-<p>$ cd /my/repository/.svn<br>$ mv wc.db wc.db.old<br>$ sqlite3 wc.db.old<br>sqlite&gt; .backup main wc.db<br>sqlite&gt; .exit<br>After making sure it works, you can remove wc.db.old.</p>
-<h3 id="忽略不需要版本控制的文件"><a href="#忽略不需要版本控制的文件" class="headerlink" title="忽略不需要版本控制的文件"></a>忽略不需要版本控制的文件</h3><blockquote>
-<p>以<code>UserInterfaceState.xcuserstate</code>为例</p>
-</blockquote>
 <h4 id="设置忽略属性"><a href="#设置忽略属性" class="headerlink" title="设置忽略属性"></a>设置忽略属性</h4><ol>
+<li>cd ~/工程目录/工程名字.xcodeproj/project.xcworkspace/xcuserdata/用户名.xcuserdatad</li>
+<li>svn rm –force UserInterfaceState.xcuserstate</li>
+<li>export EDITOR=nano [注释:这是bash下]  </li>
+<li>svn propedit svn:ignore . [注意后面有个点号,代表本目录]</li>
+<li>第4步执行完了会弹出nano编辑界面,复制粘贴UserInterfaceState.xcuserstate后按Ctrl+X输入Y保存即可</li>
+<li>输入svn status就发现不显示UserInterfaceState.xcuserstate了.证明修改成功.</li>
+</ol>
+<h3 id="解决-SVN-的-database-locked"><a href="#解决-SVN-的-database-locked" class="headerlink" title="解决 SVN 的 database locked"></a>解决 SVN 的 database locked</h3><blockquote>
+<p>肯定遇到过 SVN 操作过程中取消操作，准备 `svn cleanup”,给出一下错误提示<br>svn: E200033: database is locked, executing statement ‘RELEASE   s0’</p>
+</blockquote>
+<p>最后在<code>stack Overflow</code>找到解决方案，亲测 <code>subversion 1.7.10</code> 有效</p>
+<figure class="highlight plain"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br></pre></td><td class="code"><pre><span class="line">$ cd /my/repository/.svn</span><br><span class="line">$ mv wc.db wc.db.old</span><br><span class="line">$ sqlite3 wc.db.old</span><br><span class="line">sqlite&gt; .backup main wc.db</span><br><span class="line">sqlite&gt; .exit</span><br><span class="line">After making sure it works, you can remove wc.db.old.</span><br></pre></td></tr></table></figure>
+<h3 id="忽略不需要版本控制的文件"><a href="#忽略不需要版本控制的文件" class="headerlink" title="忽略不需要版本控制的文件"></a>忽略不需要版本控制的文件</h3><h4 id="设置忽略属性-1"><a href="#设置忽略属性-1" class="headerlink" title="设置忽略属性"></a>设置忽略属性</h4><ol>
 <li>cd ~/工程目录/工程名字.xcodeproj/project.xcworkspace/xcuserdata/用户名.xcuserdatad</li>
 <li>svn rm –force UserInterfaceState.xcuserstate</li>
 <li>export EDITOR=nano [注释:这是bash下]  </li>
@@ -515,7 +520,7 @@ svn 的命令行真心不适用 SVN 目录下所有文件的删除、添加到wo
               
             
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#svn-的命令行真心不适用"><span class="nav-number">1.</span> <span class="nav-text">svn 的命令行真心不适用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#适用于-SVN-的ignore"><span class="nav-number">2.</span> <span class="nav-text">适用于 SVN 的ignore</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决-SVN-的-database-locked"><span class="nav-number">3.</span> <span class="nav-text">解决 SVN 的 database locked</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#忽略不需要版本控制的文件"><span class="nav-number">4.</span> <span class="nav-text">忽略不需要版本控制的文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#设置忽略属性"><span class="nav-number">4.1.</span> <span class="nav-text">设置忽略属性</span></a></li></ol></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-3"><a class="nav-link" href="#SVN-的命令行真心不适用"><span class="nav-number">1.</span> <span class="nav-text">SVN  的命令行真心不适用</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#SVN-忽略不需要版本控制的文件"><span class="nav-number">2.</span> <span class="nav-text">SVN 忽略不需要版本控制的文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#修改配置文件"><span class="nav-number">2.1.</span> <span class="nav-text">修改配置文件</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#设置忽略属性"><span class="nav-number">2.2.</span> <span class="nav-text">设置忽略属性</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#解决-SVN-的-database-locked"><span class="nav-number">3.</span> <span class="nav-text">解决 SVN 的 database locked</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#忽略不需要版本控制的文件"><span class="nav-number">4.</span> <span class="nav-text">忽略不需要版本控制的文件</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#设置忽略属性-1"><span class="nav-number">4.1.</span> <span class="nav-text">设置忽略属性</span></a></li></ol></li></ol></div>
             
           </div>
         </section>
